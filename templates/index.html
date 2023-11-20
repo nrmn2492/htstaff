@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hot Wheels Data</title>
+    <!-- Include Materialize CSS with darker blue theme -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        /* Custom styles for a nicer and modern Material Dark theme */
+
+        body {
+            background-color: #121212; /* Darker Gray Background Color */
+            color: #ffffff; /* White Text Color */
+        }
+
+        table {
+            background-color: #1E1E1E; /* Dark Gray Table Header Color */
+            color: #ffffff; /* White Table Header Text Color */
+        }
+
+        tbody {
+            background-color: #212121; /* Slightly Lighter Dark Gray Table Body Color */
+        }
+
+        h3 {
+            color: #64B5F6; /* Material Blue for Headings */
+        }
+
+        th, td {
+            border-color: #424242; /* Border Color */
+        }
+
+        /* Hover effect for table rows */
+        tbody tr:hover {
+            background-color: #37474F; /* Darker Blue on Hover */
+        }
+
+        /* Focus effect for table rows */
+        tbody tr:focus {
+            background-color: #37474F; /* Darker Blue on Focus */
+        }
+
+        /* Style for the photo column */
+        td:nth-child(6) {
+            max-width: 100px;
+            overflow: hidden;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h3>Hot Wheels Data</h3>
+        <a href="{{ url_for('profile') }}" class="waves-effect waves-light btn">My Profile</a>
+        <div class="input-field white-text">
+            <input id="searchInput" type="text" class="validate white-text" oninput="liveSearch()">
+            <label for="searchInput" class="white-text">Search by Model Name</label>
+        </div>
+        <table class="striped">
+
+            <thead>
+                <tr>
+                    <th>Toy Number</th>
+                    <th>Collection Number</th>
+                    <th>Model Name</th>
+                    <th>Series</th>
+                    <th>Series Number</th>
+                    <th>Photo</th>
+                    <th>Add My Collection</th> <!-- New column -->
+                </tr>
+            </thead>
+            <tbody id="hotWheelsTableBody">
+                <!-- Data will be inserted here dynamically using JavaScript -->
+            </tbody>
+        </table>
+        <button class="waves-effect waves-light btn" onclick="addToMyCollection()">Add Selected to My Collection</button>
+    </div>
+
+    <!-- Include Materialize JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+        // Function to fetch and display Hot Wheels data
+        function getHotWheelsData() {
+            fetch('/get_hot_wheels_data')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('hotWheelsTableBody');
+
+                    // Clear existing rows
+                    tableBody.innerHTML = '';
+
+                    // Append new rows with data and checkboxes
+                    data.data.forEach(row => {
+                        const newRow = document.createElement('tr');
+                        newRow.innerHTML = `
+                            <td>${row.toy_number}</td>
+                            <td>${row.collection_number}</td>
+                            <td>${row.model_name}</td>
+                            <td>${row.series}</td>
+                            <td>${row.series_number}</td>
+                            <td>${row.photo}</td>
+                            <td><label><input type="checkbox" class="filled-in" /><span></span></label></td>
+                        `;
+                        tableBody.appendChild(newRow);
+                    });
+                })
+                .catch(error => console.error('Error fetching Hot Wheels data:', error));
+        }
+
+        // Call the function when the page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            getHotWheelsData();
+        });
+
+        // Function to add selected items to My Collection
+        function addToMyCollection() {
+            const selectedRows = document.querySelectorAll('#hotWheelsTableBody input[type="checkbox"]:checked');
+            const selectedData = Array.from(selectedRows).map(row => {
+                const columns = row.closest('tr').querySelectorAll('td');
+                return {
+                    toy_number: columns[0].innerText,
+                    collection_number: columns[1].innerText,
+                    model_name: columns[2].innerText,
+                    series: columns[3].innerText,
+                    series_number: columns[4].innerText,
+                    photo: columns[5].innerText,  // Update to correct column index
+                };
+            });
+
+            // Send the selected data to the server (you may use fetch or another method)
+            // For simplicity, log to console for now
+            console.log('Selected Data:', selectedData);
+        }
+
+        function liveSearch() {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const tableBody = document.getElementById('hotWheelsTableBody');
+        
+        fetch('/get_hot_wheels_data')
+            .then(response => response.json())
+            .then(data => {
+                // Filter data based on the search input
+                const filteredData = data.data.filter(row => row.model_name.toLowerCase().includes(searchInput));
+
+                // Clear existing rows
+                tableBody.innerHTML = '';
+
+                // Append new rows with filtered data and checkboxes
+                filteredData.forEach(row => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td>${row.toy_number}</td>
+                        <td>${row.collection_number}</td>
+                        <td>${row.model_name}</td>
+                        <td>${row.series}</td>
+                        <td>${row.series_number}</td>
+                        <td>${row.photo}</td>
+                        <td><label><input type="checkbox" class="filled-in" /><span></span></label></td>
+                    `;
+                    tableBody.appendChild(newRow);
+                });
+            })
+            .catch(error => console.error('Error fetching Hot Wheels data:', error));
+    }
+
+        // Call the liveSearch function when the page loads
+        document.addEventListener('DOMContentLoaded', function () {
+        liveSearch();
+    });
+        
+    </script>
+</body>
+
+</html>

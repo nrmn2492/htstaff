@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Hot Wheels Collection</title>
+    <!-- Include Materialize CSS with darker blue theme -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        /* Add any additional styles for the profile page */
+        body {
+            background-color: #121212; /* Darker Gray Background Color */
+            color: #ffffff; /* White Text Color */
+        }
+
+        table {
+            background-color: #1E1E1E; /* Dark Gray Table Header Color */
+            color: #ffffff; /* White Table Header Text Color */
+        }
+
+        tbody {
+            background-color: #212121; /* Slightly Lighter Dark Gray Table Body Color */
+        }
+
+        h3 {
+            color: #64B5F6; /* Material Blue for Headings */
+        }
+
+        th,
+        td {
+            border-color: #424242; /* Border Color */
+        }
+
+        /* Hover effect for table rows */
+        tbody tr:hover {
+            background-color: #37474F; /* Darker Blue on Hover */
+        }
+
+        /* Focus effect for table rows */
+        tbody tr:focus {
+            background-color: #37474F; /* Darker Blue on Focus */
+        }
+
+        /* Style for the photo column */
+        td:nth-child(6) {
+            max-width: 100px;
+            overflow: hidden;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h3>My Hot Wheels Collection</h3>
+        <table class="striped">
+            <thead>
+                <tr>
+                    <th>Toy Number</th>
+                    <th>Collection Number</th>
+                    <th>Model Name</th>
+                    <th>Series</th>
+                    <th>Series Number</th>
+                    <th>Photo</th>
+                </tr>
+            </thead>
+            <tbody id="myHotWheelsTableBody">
+                <!-- Data will be inserted here dynamically using JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Include Materialize JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+        // Function to fetch and display My Hot Wheels collection
+        function getMyHotWheelsCollection() {
+            fetch('/get_my_hot_wheels_collection')  // Update the endpoint to retrieve user's collection
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('myHotWheelsTableBody');
+
+                    // Clear existing rows
+                    tableBody.innerHTML = '';
+
+                    // Append new rows with data
+                    data.data.forEach(row => {
+                        const newRow = document.createElement('tr');
+                        newRow.innerHTML = `
+                            <td>${row.toy_number}</td>
+                            <td>${row.collection_number}</td>
+                            <td>${row.model_name}</td>
+                            <td>${row.series}</td>
+                            <td>${row.series_number}</td>
+                            <td>${row.photo}</td>
+                        `;
+                        tableBody.appendChild(newRow);
+                    });
+                })
+                .catch(error => console.error('Error fetching My Hot Wheels collection:', error));
+        }
+
+        // Call the function when the page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            getMyHotWheelsCollection();
+        });
+    </script>
+</body>
+
+</html>
