@@ -64,7 +64,7 @@ def get_hot_wheels_data():
     conn.close()
 
     # Convert the data to a list of dictionaries
-    keys = ['toy_number', 'collection_number', 'model_name', 'series', 'series_number', 'photo']
+    keys = ['toy_number', 'collection_number', 'model_name', 'series', 'series_number', 'photo_url']
     result = [dict(zip(keys, row)) for row in data]
 
     # Use jsonify correctly here
@@ -87,7 +87,7 @@ def get_all_hot_wheels_data():
         conn.close()
 
         # Convert the data to a list of dictionaries
-        keys = ['toy_number', 'collection_number', 'model_name', 'series', 'series_number', 'photo']
+        keys = ['toy_number', 'collection_number', 'model_name', 'series', 'series_number', 'photo_url']
         result = [dict(zip(keys, row)) for row in data]
 
         # Use jsonify correctly here
@@ -118,7 +118,7 @@ def get_my_hot_wheels_collection():
     conn.close()
 
     # Convert the data to a list of dictionaries
-    keys = ['toy_number', 'collection_number', 'model_name', 'series', 'series_number', 'photo']
+    keys = ['toy_number', 'collection_number', 'model_name', 'series', 'series_number', 'photo_url']
     result = [dict(zip(keys, row)) for row in data]
 
     # Use jsonify correctly here
@@ -137,7 +137,7 @@ def add_to_collection():
         # Insert selected items into the 'user_collection' table (modify table name as needed)
         for item in selected_data:
             cursor.execute('''
-                INSERT INTO user_collection (toy_number, collection_number, model_name, series, series_number, photo)
+                INSERT INTO user_collection (toy_number, collection_number, model_name, series, series_number, photo_url)
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (
                 item['toy_number'],

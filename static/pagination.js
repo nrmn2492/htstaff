@@ -55,3 +55,23 @@ function goToNextPage() {
 // Hívja meg az 'updatePage' függvényt az inicializáláshoz
 updatePage();
 });
+
+
+function openLightbox(photoUrl) {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightbox-image');
+    
+    lightboxImage.src = photoUrl;
+    lightbox.style.display = 'block';
+}
+
+document.getElementById('lightbox').addEventListener('click', function (e) {
+    if (e.target === this) {
+        closeLightbox();
+    }
+});
+
+function closeLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    lightbox.style.display = 'none';
+}

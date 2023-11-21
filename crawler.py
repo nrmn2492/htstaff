@@ -1,3 +1,5 @@
+# Crawler
+import os
 import requests
 from bs4 import BeautifulSoup
 import sqlite3
@@ -22,22 +24,32 @@ def scrape_hot_wheels(url):
             model_name TEXT,
             series TEXT,
             series_number TEXT,
-            photo TEXT
+            photo_url TEXT
         )
     ''')
     conn.commit()
 
     # Insert data into the database
-    for row in table.find_all('tr')[1:]:  # Skipping the header row
+    for row in table.find_all('tr')[1:]:
         columns = row.find_all('td')
-        if len(columns) == 6:  # Ensure it's a valid row
-            toy_number, collection_number, model_name, series, series_number, photo = [col.text.strip() for col in columns]
+        if len(columns) == 6:
+            toy_number, collection_number, model_name, series, series_number = [col.text.strip() for col in columns[:-1]]
+            photo_td = columns[-1]
+            photo_url = photo_td.find('a')['href'] if photo_td.find('a') else None
 
-            # Insert data into the database
+            # Kép letöltése a statikus mappába
+            if photo_url:
+                response = requests.get(photo_url)
+                if response.status_code == 200:
+                    image_filename = f'static/{toy_number}.jpg'  # Képfájl neve a toy_number alapján
+                    with open(image_filename, 'wb') as f:
+                        f.write(response.content)
+
+            # Adatok mentése az adatbázisba, beleértve a kép elérési útvonalát
             cursor.execute('''
-                INSERT INTO hot_wheels (toy_number, collection_number, model_name, series, series_number, photo)
+                INSERT INTO hot_wheels (toy_number, collection_number, model_name, series, series_number, photo_url)
                 VALUES (?, ?, ?, ?, ?, ?)
-            ''', (toy_number, collection_number, model_name, series, series_number, photo))
+            ''', (toy_number, collection_number, model_name, series, series_number, f'/static/{toy_number}.jpg'))
             conn.commit()
 
     # Close the database connection
@@ -46,7 +58,7 @@ def scrape_hot_wheels(url):
 # Example usage
 base_url = 'https://hotwheels.fandom.com/wiki/List_of_{}_Hot_Wheels'
 urls = [
-    base_url.format(year) for year in range(1968, 2025)
+    base_url.format(year) for year in range(2022, 2023)
 ]
 
 for url in urls:
