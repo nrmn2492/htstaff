@@ -3,20 +3,36 @@ import sqlite3
 
 app = Flask(__name__)
 
+# Create the users table if it doesn't exist
+with sqlite3.connect('hot_wheels.db') as conn:
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            email TEXT
+        )
+    ''')
+    conn.commit()
+
 # Create the user_collection table if it doesn't exist
 with sqlite3.connect('hot_wheels.db') as conn:
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS user_collection (
+        CREATE TABLE IF NOT EXISTS users_collection (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            toy_number TEXT NOT NULL,
+            user_id INTEGER,
+            toy_number TEXT UNIQUE,
+            release_year INTEGER,
             collection_number TEXT,
             model_name TEXT,
             series TEXT,
             series_number TEXT,
-            photo TEXT
+            photo_url TEXT
         )
     ''')
+    conn.commit()
+
 
 # Function to query the database
 def search_hot_wheels(query):
@@ -46,13 +62,17 @@ def get_hot_wheels_data():
     page = int(request.args.get('page', 1))  # Aktuális oldalszám
     per_page = int(request.args.get('per_page', 10))  # Oldalankénti találatok száma
 
-    # Kiszámolja az adatok lekérésének tartományát
-    start_index = (page - 1) * per_page
-    end_index = start_index + per_page
-
     # Connect to SQLite database
     conn = sqlite3.connect('hot_wheels.db')
     cursor = conn.cursor()
+
+    # Lekérdezi az összes találat számát
+    cursor.execute('SELECT COUNT(*) FROM hot_wheels')
+    total_items = cursor.fetchone()[0]
+
+    # Kiszámolja az adatok lekérésének tartományát
+    start_index = (page - 1) * per_page
+    end_index = start_index + per_page
 
     # Execute a query to fetch data with pagination
     cursor.execute('SELECT * FROM hot_wheels LIMIT ? OFFSET ?', (per_page, start_index))
@@ -64,11 +84,20 @@ def get_hot_wheels_data():
     conn.close()
 
     # Convert the data to a list of dictionaries
-    keys = ['toy_number', 'collection_number', 'model_name', 'series', 'series_number', 'photo_url']
+    keys = ['id', 'toy_number', 'release_year', 'collection_number', 'model_name', 'series', 'series_number', 'photo_url']
     result = [dict(zip(keys, row)) for row in data]
 
+    # Számolja ki az összes oldalt
+    total_pages = (total_items + per_page - 1) // per_page
+
     # Use jsonify correctly here
-    return jsonify({"data": result})
+    response_data = {
+        "data": result,
+        "currentPage": page,
+        "totalPages": total_pages,
+        "totalItems": total_items
+    }
+    return jsonify(response_data)
 
 @app.route('/get_all_hot_wheels_data')
 def get_all_hot_wheels_data():
@@ -87,7 +116,7 @@ def get_all_hot_wheels_data():
         conn.close()
 
         # Convert the data to a list of dictionaries
-        keys = ['toy_number', 'collection_number', 'model_name', 'series', 'series_number', 'photo_url']
+        keys = ['id', 'toy_number', 'collection_number', 'release_year', 'model_name', 'series', 'series_number', 'photo_url']
         result = [dict(zip(keys, row)) for row in data]
 
         # Use jsonify correctly here
@@ -108,8 +137,8 @@ def get_my_hot_wheels_collection():
     conn = sqlite3.connect('hot_wheels.db')
     cursor = conn.cursor()
 
-    # Execute a query to fetch all data from the 'user_collection' table (modify table name as needed)
-    cursor.execute('SELECT * FROM user_collection')
+    # Execute a query to fetch all data from the 'users_collection' table (modify table name as needed)
+    cursor.execute('SELECT * FROM users_collection')
 
     # Fetch all rows
     data = cursor.fetchall()
@@ -118,7 +147,7 @@ def get_my_hot_wheels_collection():
     conn.close()
 
     # Convert the data to a list of dictionaries
-    keys = ['toy_number', 'collection_number', 'model_name', 'series', 'series_number', 'photo_url']
+    keys = ['id', 'toy_number', 'release_year', 'collection_number', 'model_name', 'series', 'series_number', 'photo_url']
     result = [dict(zip(keys, row)) for row in data]
 
     # Use jsonify correctly here
@@ -134,18 +163,21 @@ def add_to_collection():
         conn = sqlite3.connect('hot_wheels.db')
         cursor = conn.cursor()
 
-        # Insert selected items into the 'user_collection' table (modify table name as needed)
+        # Insert selected items into the 'users_collection' table (modify table name as needed)
         for item in selected_data:
             cursor.execute('''
-                INSERT INTO user_collection (toy_number, collection_number, model_name, series, series_number, photo_url)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO users_collection (id, user_id, toy_number, release_year, collection_number, model_name, series, series_number, photo_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (
+                item['id'],
+                item['user_id'],
                 item['toy_number'],
+                item['release_year'],
                 item['collection_number'],
                 item['model_name'],
                 item['series'],
                 item['series_number'],
-                item['photo'],
+                item['photo_url'],
             ))
 
         # Commit changes and close the database connection

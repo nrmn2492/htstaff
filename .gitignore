@@ -1,1 +1,2 @@
-static/*.jpg
+static/images/*
+!static/images/placeholder.jpeg

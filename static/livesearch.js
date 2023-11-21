@@ -24,18 +24,19 @@ function delayedLiveSearch() {
                     filteredData.forEach(row => {
                         const newRow = document.createElement('tr');
                         newRow.innerHTML = `
-                            <td>${row.toy_number}</td>
-                            <td>${row.collection_number}</td>
-                            <td>${row.model_name}</td>
-                            <td>${row.series}</td>
-                            <td>${row.series_number}</td>
-                            <td>${row.photo}</td>
-                            <td><label><input type="checkbox" class="filled-in" /><span></span></label></td>
+                        <td>${row.toy_number}</td>
+                        <td>${row.collection_number}</td>
+                        <td>${row.release_year}</td>
+                        <td>${row.model_name}</td>
+                        <td>${row.series}</td>
+                        <td>${row.series_number}</td>
+                        <td><a data-fancybox href="${row.photo_url}"><img src="${row.photo_url}" alt="Hot Wheels Photo" /></a></td>
+                        <td><label><input type="checkbox" class="filled-in" /><span></span></label></td>
                         `;
                         tableBody.appendChild(newRow);
                     });
                 })
                 .catch(error => console.error('Error fetching Hot Wheels data:', error));
         }
-    }, 1500); // 1.5 seconds delay
+    }, 1000); // 1.5 seconds delay
 }

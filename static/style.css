@@ -1,0 +1,50 @@
+        /* Custom styles for a nicer and modern Material Dark theme */
+
+        body {
+            background-color: #121212; /* Darker Gray Background Color */
+            color: #ffffff; /* White Text Color */
+        }
+
+        table {
+            background-color: #1E1E1E; /* Dark Gray Table Header Color */
+            color: #ffffff; /* White Table Header Text Color */
+        }
+
+        tbody {
+            background-color: #212121; /* Slightly Lighter Dark Gray Table Body Color */
+        }
+
+        h3 {
+            color: #64B5F6; /* Material Blue for Headings */
+        }
+
+        th, td {
+            border-color: #424242; /* Border Color */
+        }
+
+        /* Hover effect for table rows */
+        tbody tr:hover {
+            background-color: #37474F; /* Darker Blue on Hover */
+        }
+
+        /* Focus effect for table rows */
+        tbody tr:focus {
+            background-color: #37474F; /* Darker Blue on Focus */
+        }
+
+        /* Style for the photo column */
+        td:nth-child(6) {
+            max-width: 100px;
+            overflow: hidden;
+        }
+
+
+
+
+
+/* IMAGE */
+
+td a img {
+    max-width: 50px;
+    height: auto;
+}
