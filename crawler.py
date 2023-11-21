@@ -2,7 +2,11 @@ import os
 import requests
 from bs4 import BeautifulSoup
 import sqlite3
-from tqdm import tqdm
+import time
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 # Function to scrape data from a Hot Wheels page for a specific year
 def scrape_hot_wheels(url, year):
@@ -31,12 +35,6 @@ def scrape_hot_wheels(url, year):
     ''')
     conn.commit()
 
-    # Get the total number of rows for progress tracking
-    total_rows = len(table.find_all('tr')[1:])
-
-    # Create a progress bar for rows
-    row_bar = tqdm(total=total_rows, unit=" row", position=1)
-
     # Insert data into the database
     for row in table.find_all('tr')[1:]:
         columns = row.find_all('td')
@@ -49,32 +47,34 @@ def scrape_hot_wheels(url, year):
             cursor.execute('SELECT id FROM hot_wheels WHERE toy_number = ?', (toy_number,))
             existing_row = cursor.fetchone()
 
-            if not existing_row:
-                # Kép letöltése a statikus mappába
-                if photo_url:
+            if existing_row:
+                logging.info(f"Toy {toy_number} already exists. Skipping.")
+                continue  # Skip existing toys
+
+            # Download the image
+            if photo_url:
+                try:
                     response = requests.get(photo_url)
+                    response.raise_for_status()  # Raise an HTTPError for bad responses
                     if response.status_code == 200:
-                        image_filename = f'static/images/{toy_number}.jpg'  # Képfájl neve a toy_number alapján
+                        image_filename = f'static/images/{toy_number}.jpg'
                         img_database_link = f'/static/images/{toy_number}.jpg'
                         with open(image_filename, 'wb') as f:
                             f.write(response.content)
                     else:
-                        img_database_link = f'/static/images/placeholder.jpeg'
+                        logging.error(f"Failed to download image for {toy_number}. Status code: {response.status_code}")
+                        img_database_link = '/static/images/placeholder.jpeg'
+                except requests.exceptions.RequestException as e:
+                    logging.error(f"Error downloading image for {toy_number}: {e}")
+                    img_database_link = '/static/images/placeholder.jpeg'
+                    time.sleep(5)  # Add a delay before retrying
 
-                # Adatok mentése az adatbázisba, beleértve a kép elérési útvonalát és a release évet
+                # Save image data to the database
                 cursor.execute('''
-                    INSERT INTO hot_wheels (toy_number, collection_number, model_name, series, series_number, photo_url, release_year)
+                    INSERT OR IGNORE INTO hot_wheels (toy_number, collection_number, model_name, series, series_number, photo_url, release_year)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 ''', (toy_number, collection_number, model_name, series, series_number, img_database_link, year))
                 conn.commit()
-
-                # Növeljük a sorok progress bar-ját
-                row_bar.update(1)
-
-    # Kiírjuk az éppen feldolgozott év számát
-
-    # Bezárjuk a progress bar-okat
-    row_bar.close()
 
     # Close the database connection
     conn.close()
