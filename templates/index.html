@@ -7,81 +7,60 @@
     <title>Hot Wheels Data</title>
     <!-- Include Materialize CSS with darker blue theme -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <style>
-        /* Custom styles for a nicer and modern Material Dark theme */
+    <script src="{{ url_for('static', filename='pagination.js') }}"></script>
+    <script src="{{ url_for('static', filename='livesearch.js') }}"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css">
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
 
-        body {
-            background-color: #121212; /* Darker Gray Background Color */
-            color: #ffffff; /* White Text Color */
-        }
 
-        table {
-            background-color: #1E1E1E; /* Dark Gray Table Header Color */
-            color: #ffffff; /* White Table Header Text Color */
-        }
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-        tbody {
-            background-color: #212121; /* Slightly Lighter Dark Gray Table Body Color */
-        }
-
-        h3 {
-            color: #64B5F6; /* Material Blue for Headings */
-        }
-
-        th, td {
-            border-color: #424242; /* Border Color */
-        }
-
-        /* Hover effect for table rows */
-        tbody tr:hover {
-            background-color: #37474F; /* Darker Blue on Hover */
-        }
-
-        /* Focus effect for table rows */
-        tbody tr:focus {
-            background-color: #37474F; /* Darker Blue on Focus */
-        }
-
-        /* Style for the photo column */
-        td:nth-child(6) {
-            max-width: 100px;
-            overflow: hidden;
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
-        }
-    </style>
 </head>
 
-<body>
-    <div class="container">
-        <h3>Hot Wheels Data</h3>
-        <a href="{{ url_for('profile') }}" class="waves-effect waves-light btn">My Profile</a>
-        <div class="input-field white-text">
-            <input id="searchInput" type="text" class="validate white-text" oninput="liveSearch()">
-            <label for="searchInput" class="white-text">Search by Model Name</label>
+<body>    
+    <body>    
+        <div class="container">
+            <h3>Hot Wheels Data</h3>
+            <a href="{{ url_for('profile') }}" class="waves-effect waves-light btn">My Profile</a>
+            <div class="input-field white-text">
+                <input id="searchInput" type="text" class="validate white-text" oninput="delayedLiveSearch()">
+                <label for="searchInput" class="white-text">Search by Model Name</label>
+            </div>
+            <button id="previousPageBtn" class="waves-effect waves-light btn">Previous Page</button>
+            <button id="nextPageBtn" class="waves-effect waves-light btn">Next Page</button>
+            <!-- Új rész az oldalszámok és találatok számához -->
+        <!-- Új rész az oldalszámok és találatok számához -->
+        <div class="pagination-info">
+            <span id="currentPage">Oldal: 1</span> / <span id="totalPages"> 1</span>
+            <br>
+            <span id="totalItems">Összes Autó 0</span>
         </div>
-        <table class="striped">
 
-            <thead>
-                <tr>
-                    <th>Toy Number</th>
-                    <th>Collection Number</th>
-                    <th>Model Name</th>
-                    <th>Series</th>
-                    <th>Series Number</th>
-                    <th>Photo</th>
-                    <th>Add My Collection</th> <!-- New column -->
-                </tr>
-            </thead>
-            <tbody id="hotWheelsTableBody">
-                <!-- Data will be inserted here dynamically using JavaScript -->
-            </tbody>
-        </table>
-        <button class="waves-effect waves-light btn" onclick="addToMyCollection()">Add Selected to My Collection</button>
-    </div>
+            <table class="striped">
+                <thead>
+                    <tr>
+                        <th>Sorszám</th>
+                        <th>Kollekció szám</th>
+                        <th>Kiadási év</th>
+                        <th>Modell név</th>
+                        <th>Sorozat</th>
+                        <th>Sorozat száma</th>
+                        <th>Kép</th>
+                        <th>Hozzáadom a kollekciómhoz</th> <!-- New column -->
+                    </tr>
+                </thead>
+                <tbody id="hotWheelsTableBody">
+                    <!-- Data will be inserted here dynamically using JavaScript -->
+                </tbody>
+            </table>
+            <!-- Új rész az oldalszámok kezeléséhez -->
+            <div class="pagination-controls">
+                <button class="waves-effect waves-light btn" onclick="goToPage('previous')">Previous Page</button>
+                <button class="waves-effect waves-light btn" onclick="goToPage('next')">Next Page</button>
+            </div>
+            <!-- Gombok az előző és következő oldalra való lépéshez -->
+            <button class="waves-effect waves-light btn" onclick="addToMyCollection()">Add Selected to My Collection</button>
+        </div>
 
     <!-- Include Materialize JS and jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
@@ -91,93 +70,81 @@
         // Function to fetch and display Hot Wheels data
         function getHotWheelsData() {
             fetch('/get_hot_wheels_data')
-                .then(response => response.json())
-                .then(data => {
-                    const tableBody = document.getElementById('hotWheelsTableBody');
-
-                    // Clear existing rows
-                    tableBody.innerHTML = '';
-
-                    // Append new rows with data and checkboxes
-                    data.data.forEach(row => {
-                        const newRow = document.createElement('tr');
-                        newRow.innerHTML = `
-                            <td>${row.toy_number}</td>
-                            <td>${row.collection_number}</td>
-                            <td>${row.model_name}</td>
-                            <td>${row.series}</td>
-                            <td>${row.series_number}</td>
-                            <td>${row.photo}</td>
-                            <td><label><input type="checkbox" class="filled-in" /><span></span></label></td>
-                        `;
-                        tableBody.appendChild(newRow);
-                    });
-                })
-                .catch(error => console.error('Error fetching Hot Wheels data:', error));
-        }
-
-        // Call the function when the page loads
-        document.addEventListener('DOMContentLoaded', function () {
-            getHotWheelsData();
-        });
-
-        // Function to add selected items to My Collection
-        function addToMyCollection() {
-            const selectedRows = document.querySelectorAll('#hotWheelsTableBody input[type="checkbox"]:checked');
-            const selectedData = Array.from(selectedRows).map(row => {
-                const columns = row.closest('tr').querySelectorAll('td');
-                return {
-                    toy_number: columns[0].innerText,
-                    collection_number: columns[1].innerText,
-                    model_name: columns[2].innerText,
-                    series: columns[3].innerText,
-                    series_number: columns[4].innerText,
-                    photo: columns[5].innerText,  // Update to correct column index
-                };
-            });
-
-            // Send the selected data to the server (you may use fetch or another method)
-            // For simplicity, log to console for now
-            console.log('Selected Data:', selectedData);
-        }
-
-        function liveSearch() {
-        const searchInput = document.getElementById('searchInput').value.toLowerCase();
-        const tableBody = document.getElementById('hotWheelsTableBody');
-        
-        fetch('/get_hot_wheels_data')
-            .then(response => response.json())
-            .then(data => {
-                // Filter data based on the search input
-                const filteredData = data.data.filter(row => row.model_name.toLowerCase().includes(searchInput));
-
+              .then(response => response.json())
+              .then(data => {
+                const tableBody = document.getElementById('hotWheelsTableBody');
+          
                 // Clear existing rows
                 tableBody.innerHTML = '';
-
-                // Append new rows with filtered data and checkboxes
-                filteredData.forEach(row => {
-                    const newRow = document.createElement('tr');
-                    newRow.innerHTML = `
-                        <td>${row.toy_number}</td>
-                        <td>${row.collection_number}</td>
-                        <td>${row.model_name}</td>
-                        <td>${row.series}</td>
-                        <td>${row.series_number}</td>
-                        <td>${row.photo}</td>
-                        <td><label><input type="checkbox" class="filled-in" /><span></span></label></td>
-                    `;
-                    tableBody.appendChild(newRow);
+          
+                // Append new rows with data and checkboxes
+                data.data.forEach(row => {
+                  const newRow = document.createElement('tr');
+                  newRow.innerHTML = `
+                    <td>${row.toy_number}</td>
+                    <td>${row.collection_number}</td>
+                    <td>${row.release_year}</td>
+                    <td>${row.model_name}</td>
+                    <td>${row.series}</td>
+                    <td>${row.series_number}</td>
+                    <td><a data-fancybox href="${row.photo_url}"><img src="${row.photo_url}" alt="Hot Wheels Photo" /></a></td>
+                    <td><label><input type="checkbox" class="filled-in" /><span></span></label></td>
+                  `;
+                  tableBody.appendChild(newRow);
                 });
-            })
-            .catch(error => console.error('Error fetching Hot Wheels data:', error));
-    }
-
-        // Call the liveSearch function when the page loads
+          
+                // Inicializáld a FancyBoxot a képeken
+                Fancybox.bind('[data-fancybox]', {
+                });
+          
+                // Frissítsd az oldal számot és az összes találat számot
+                const currentPageSpan = document.getElementById('currentPage');
+                const totalPagesSpan = document.getElementById('totalPages');
+                const totalItemsSpan = document.getElementById('totalItems');
+                
+                currentPageSpan.textContent = `Oldal: ${data.currentPage}`;
+                totalPagesSpan.textContent = ` ${data.totalPages}`;
+                totalItemsSpan.textContent = `Összes Autó ${data.totalItems}`;
+              })
+              .catch(error => console.error('Error fetching Hot Wheels data:', error));
+          }
+      
+        // Call the function when the page loads
         document.addEventListener('DOMContentLoaded', function () {
-        liveSearch();
-    });
-        
-    </script>
+          getHotWheelsData();
+        });
+      
+        // Function to add selected items to My Collection
+        function addToMyCollection() {
+          const selectedRows = document.querySelectorAll('#hotWheelsTableBody input[type="checkbox"]:checked');
+          const selectedData = Array.from(selectedRows).map(row => {
+            const columns = row.closest('tr').querySelectorAll('td');
+            return {
+                toy_number: columns[0].innerText,
+                collection_number: columns[1].innerText,
+                model_name: columns[2].innerText,
+                model_name: columns[3].innerText,
+                series: columns[4].innerText,
+                series_number: columns[5].innerText,
+                photo: columns[6].innerText,
+            };
+          });
+      
+          // Küldje vissza a kiválasztott adatokat a szerverre
+          fetch('/add_to_collection', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ selectedData }),
+          })
+            .then(response => response.json())
+            .then(data => {
+              console.log(data.message); // Válasz logolása a konzolba
+            })
+            .catch(error => console.error('Error adding to collection:', error));
+        }
+      </script>
 </body>
 
 </html>
