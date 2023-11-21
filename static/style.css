@@ -38,9 +38,10 @@
             overflow: hidden;
         }
 
-
-
-
+        .custom-dropdown select,
+        .custom-dropdown label {
+            color: white !important;
+        }
 
 /* IMAGE */
 

@@ -18,14 +18,32 @@
 </head>
 
 <body>    
-    <body>    
+    <body> 
+      
+
+
+      
         <div class="container">
             <h3>Hot Wheels Data</h3>
-            <a href="{{ url_for('profile') }}" class="waves-effect waves-light btn">My Profile</a>
+
+            <div class="input-field" style="background-color: lightblue;">
+              <select id="userDropdown">
+                <br>
+                  <option value="" disabled selected>Choose a user</option>
+                  {% for user in users %}
+                      <option value="{{ user }}">{{ user }}</option>
+                  {% endfor %}
+              </select>
+          </div>
+
+          <button id="collectionBtn" class="waves-effect waves-light btn" onclick="viewCollection()">Collection</button>
+
             <div class="input-field white-text">
                 <input id="searchInput" type="text" class="validate white-text" oninput="delayedLiveSearch()">
                 <label for="searchInput" class="white-text">Search by Model Name</label>
             </div>
+
+            
             <button id="previousPageBtn" class="waves-effect waves-light btn">Previous Page</button>
             <button id="nextPageBtn" class="waves-effect waves-light btn">Next Page</button>
             <!-- Új rész az oldalszámok és találatok számához -->
@@ -58,15 +76,30 @@
                 <button class="waves-effect waves-light btn" onclick="goToPage('previous')">Previous Page</button>
                 <button class="waves-effect waves-light btn" onclick="goToPage('next')">Next Page</button>
             </div>
-            <!-- Gombok az előző és következő oldalra való lépéshez -->
-            <button class="waves-effect waves-light btn" onclick="addToMyCollection()">Add Selected to My Collection</button>
+
         </div>
 
     <!-- Include Materialize JS and jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
+  <table class="striped">
+      <!-- ... (your existing table headers) ... -->
+      <tbody id="hotWheelsTableBody">
+          <!-- Data will be inserted here dynamically using JavaScript -->
+      </tbody>
+  </table>
+  
+  <button class="waves-effect waves-light btn" onclick="addToMyCollection()">Add Selected to My Collection</button>
+
     <script>
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize Materialize components
+    M.AutoInit();
+    // Fetch and display Hot Wheels data
+    getHotWheelsData();
+});
         // Function to fetch and display Hot Wheels data
         function getHotWheelsData() {
             fetch('/get_hot_wheels_data')
@@ -116,19 +149,20 @@
       
         // Function to add selected items to My Collection
         function addToMyCollection() {
-          const selectedRows = document.querySelectorAll('#hotWheelsTableBody input[type="checkbox"]:checked');
-          const selectedData = Array.from(selectedRows).map(row => {
-            const columns = row.closest('tr').querySelectorAll('td');
-            return {
-                toy_number: columns[0].innerText,
-                collection_number: columns[1].innerText,
-                model_name: columns[2].innerText,
-                model_name: columns[3].innerText,
-                series: columns[4].innerText,
-                series_number: columns[5].innerText,
-                photo: columns[6].innerText,
-            };
-          });
+    const selectedRows = document.querySelectorAll('#hotWheelsTableBody input[type="checkbox"]:checked');
+    const selectedData = Array.from(selectedRows).map(row => {
+        const columns = row.closest('tr').querySelectorAll('td');
+        return {
+            user: document.getElementById('userDropdown').value,
+            toy_number: columns[0].innerText,
+            collection_number: columns[1].innerText,
+            release_year: columns[2].innerText,
+            model_name: columns[3].innerText,
+            series: columns[4].innerText,
+            series_number: columns[5].innerText,
+            photo: columns[6].innerText,
+        };
+    });
       
           // Küldje vissza a kiválasztott adatokat a szerverre
           fetch('/add_to_collection', {
@@ -144,6 +178,14 @@
             })
             .catch(error => console.error('Error adding to collection:', error));
         }
+
+        function viewCollection() {
+    // Get the selected user from the dropdown
+    const selectedUser = document.getElementById('userDropdown').value;
+
+    // Redirect to the page showing all saved cars for the selected user
+    window.location.href = `/view_collection?user=${selectedUser}`;
+}
       </script>
 </body>
 

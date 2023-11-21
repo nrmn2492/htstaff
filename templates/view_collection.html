@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Collection</title>
+    <!-- Include Materialize CSS with darker blue theme -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Include FancyBox CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css">
+    <!-- Include your custom style -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Include any additional styles or libraries you may need -->
+</head>
+
+<body>
+
+    <div class="container">
+        <h3>User Collection - {{ user_name }}</h3>
+
+        <table class="striped">
+            <thead>
+                <tr>
+                    <th>Sorszám</th>
+                    <th>Kiadási év</th>
+                    <th>Modell név</th>
+                    <th>Sorozat</th>
+                    <th>Sorozat száma</th>
+                    <th>Kép</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in collection_data %}
+                <tr>
+                    <td>{{ item.toy_number }}</td>
+                    <td>{{ item.release_year }}</td>
+                    <td>{{ item.model_name }}</td>
+                    <td>{{ item.series }}</td>
+                    <td>{{ item.series_number }}</td>
+                    <!-- Use a smaller thumbnail image -->
+                    <td><img src="{{ item.photo_url }}" alt="Toy Thumbnail" height="50"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Include any additional content or features as needed -->
+
+    </div>
+
+    <!-- Include any additional scripts or libraries you may need -->
+
+</body>
+
+</html>
