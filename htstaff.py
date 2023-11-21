@@ -43,14 +43,21 @@ def home():
 
 @app.route('/get_hot_wheels_data')
 def get_hot_wheels_data():
+    page = int(request.args.get('page', 1))  # Aktuális oldalszám
+    per_page = int(request.args.get('per_page', 10))  # Oldalankénti találatok száma
+
+    # Kiszámolja az adatok lekérésének tartományát
+    start_index = (page - 1) * per_page
+    end_index = start_index + per_page
+
     # Connect to SQLite database
     conn = sqlite3.connect('hot_wheels.db')
     cursor = conn.cursor()
 
-    # Execute a query to fetch all data from the 'hot_wheels' table
-    cursor.execute('SELECT * FROM hot_wheels')
+    # Execute a query to fetch data with pagination
+    cursor.execute('SELECT * FROM hot_wheels LIMIT ? OFFSET ?', (per_page, start_index))
 
-    # Fetch all rows
+    # Fetch the rows for the current page
     data = cursor.fetchall()
 
     # Close the database connection
@@ -61,7 +68,33 @@ def get_hot_wheels_data():
     result = [dict(zip(keys, row)) for row in data]
 
     # Use jsonify correctly here
-    return jsonify({"data": result})  # You can wrap the result in a dictionary if needed
+    return jsonify({"data": result})
+
+@app.route('/get_all_hot_wheels_data')
+def get_all_hot_wheels_data():
+    try:
+        # Connect to SQLite database
+        conn = sqlite3.connect('hot_wheels.db')
+        cursor = conn.cursor()
+
+        # Execute a query to fetch all data without pagination
+        cursor.execute('SELECT * FROM hot_wheels')
+
+        # Fetch all the rows
+        data = cursor.fetchall()
+
+        # Close the database connection
+        conn.close()
+
+        # Convert the data to a list of dictionaries
+        keys = ['toy_number', 'collection_number', 'model_name', 'series', 'series_number', 'photo']
+        result = [dict(zip(keys, row)) for row in data]
+
+        # Use jsonify correctly here
+        return jsonify({"data": result})
+
+    except Exception as e:
+        return jsonify({'error': str(e)})
 
 # Route for the profile page
 @app.route('/profile')

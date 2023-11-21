@@ -7,6 +7,8 @@
     <title>Hot Wheels Data</title>
     <!-- Include Materialize CSS with darker blue theme -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="{{ url_for('static', filename='pagination.js') }}"></script>
+    <script src="{{ url_for('static', filename='livesearch.js') }}"></script>
     <style>
         /* Custom styles for a nicer and modern Material Dark theme */
 
@@ -60,9 +62,11 @@
         <h3>Hot Wheels Data</h3>
         <a href="{{ url_for('profile') }}" class="waves-effect waves-light btn">My Profile</a>
         <div class="input-field white-text">
-            <input id="searchInput" type="text" class="validate white-text" oninput="liveSearch()">
+            <input id="searchInput" type="text" class="validate white-text" oninput="delayedLiveSearch()">
             <label for="searchInput" class="white-text">Search by Model Name</label>
         </div>
+        <button id="previousPageBtn" class="waves-effect waves-light btn">Previous Page</button>
+        <button id="nextPageBtn" class="waves-effect waves-light btn">Next Page</button>
         <table class="striped">
 
             <thead>
@@ -80,6 +84,7 @@
                 <!-- Data will be inserted here dynamically using JavaScript -->
             </tbody>
         </table>
+        <!-- Gombok az előző és következő oldalra való lépéshez -->
         <button class="waves-effect waves-light btn" onclick="addToMyCollection()">Add Selected to My Collection</button>
     </div>
 
@@ -132,51 +137,24 @@
                     model_name: columns[2].innerText,
                     series: columns[3].innerText,
                     series_number: columns[4].innerText,
-                    photo: columns[5].innerText,  // Update to correct column index
+                    photo: columns[5].innerText,
                 };
             });
-
-            // Send the selected data to the server (you may use fetch or another method)
-            // For simplicity, log to console for now
-            console.log('Selected Data:', selectedData);
-        }
-
-        function liveSearch() {
-        const searchInput = document.getElementById('searchInput').value.toLowerCase();
-        const tableBody = document.getElementById('hotWheelsTableBody');
         
-        fetch('/get_hot_wheels_data')
+            // Küldje vissza a kiválasztott adatokat a szerverre
+            fetch('/add_to_collection', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ selectedData }),
+            })
             .then(response => response.json())
             .then(data => {
-                // Filter data based on the search input
-                const filteredData = data.data.filter(row => row.model_name.toLowerCase().includes(searchInput));
-
-                // Clear existing rows
-                tableBody.innerHTML = '';
-
-                // Append new rows with filtered data and checkboxes
-                filteredData.forEach(row => {
-                    const newRow = document.createElement('tr');
-                    newRow.innerHTML = `
-                        <td>${row.toy_number}</td>
-                        <td>${row.collection_number}</td>
-                        <td>${row.model_name}</td>
-                        <td>${row.series}</td>
-                        <td>${row.series_number}</td>
-                        <td>${row.photo}</td>
-                        <td><label><input type="checkbox" class="filled-in" /><span></span></label></td>
-                    `;
-                    tableBody.appendChild(newRow);
-                });
+                console.log(data.message); // Válasz logolása a konzolba
             })
-            .catch(error => console.error('Error fetching Hot Wheels data:', error));
-    }
-
-        // Call the liveSearch function when the page loads
-        document.addEventListener('DOMContentLoaded', function () {
-        liveSearch();
-    });
-        
+            .catch(error => console.error('Error adding to collection:', error));
+        }
     </script>
 </body>
 
