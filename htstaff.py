@@ -60,7 +60,7 @@ def home():
 @app.route('/get_hot_wheels_data')
 def get_hot_wheels_data():
     page = int(request.args.get('page', 1))  # Aktuális oldalszám
-    per_page = int(request.args.get('per_page', 10))  # Oldalankénti találatok száma
+    per_page = int(request.args.get('per_page', 15))  # Oldalankénti találatok száma
 
     # Connect to SQLite database
     conn = sqlite3.connect('hot_wheels.db')
